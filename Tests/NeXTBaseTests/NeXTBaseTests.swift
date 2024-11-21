@@ -10,9 +10,14 @@ import Testing
 import Foundation
 import TabularData
 
-@Test func example() async throws {
+@Test func frameChecer() async throws {
+    try testDB_ii()
+}
+
+@Test func recordChecker() async throws {
     // Write your test here and use APIs like `#expect(...)` to check expected conditions.
     let rep = try testDB()
+    
     var rlines = [String]()
     rep.enumerateLines { line, stop in
         rlines.append(line)
@@ -47,6 +52,41 @@ struct PersonII: Codable {
     var name: String
     var tag: String?
 }
+
+extension SQLTable.Name {
+    static let profiles: Self = "profiles"
+}
+
+func testDB_ii() throws {
+    let db = try SQLDatabase(path: "/tmp/_ii.db")
+    let p = Person(id: 1, name: "Jane")
+    
+    try db.write(p, to: .profiles)
+    let df1 = try db.dataFrame(from: .profiles, limit: 10)
+    print(df1)
+    
+    let p2 = PersonII(id: 2, name: "George", tag: "tagged")
+    try db.write(p2, to: .profiles)
+    let df2 = try db.dataFrame(from: .profiles, limit: 10)
+    print(df2)
+
+    try db.write(dataFrame: df2, to: "data_frame", create: true)
+    
+    if let george:PersonII = try db.read(id: 2, from: .profiles) {
+        print(george)
+    }
+    let p3: [Person] = try db.read(from: .profiles)
+    for p in p3 {
+        print(p)
+    }
+    
+    let p4: [PersonII] = try db.read(from: .profiles)
+    for p in p4 {
+        print(p)
+    }
+
+}
+
 
 func testDB() throws -> String {
     var result = ""

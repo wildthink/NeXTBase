@@ -216,7 +216,6 @@ extension DataFrame {
         let questionMarks = Array(repeating:"?", count:shape.columns).joined(separator: ",")
         let sql = "insert into \(table) values (\(questionMarks))"
         let statement = try connection.prepareStatement(sql)
-        defer { sqlite3_finalize(statement.ref) }
         try writeRows(statement: statement)
     }
 }

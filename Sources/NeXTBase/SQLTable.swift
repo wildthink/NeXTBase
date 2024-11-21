@@ -7,12 +7,14 @@
 //
 import Foundation
 
+
 public class SQLTable {
-    public private(set) var database: SQLDatabase
-    public private(set) var tableName: String
+    // TODO: Consider null safety handling
+    private weak var database: SQLDatabase!
+    public private(set) var tableName: SQLTable.Name
     public private(set) var columns: [SQLColumn] = []
     
-    public init(database: SQLDatabase, tableName: String) {
+    public init(database: SQLDatabase, tableName: SQLTable.Name) {
         self.database = database
         self.tableName = tableName
     }
@@ -138,7 +140,7 @@ extension SQLTable {
         return try read(as: type, with: query)
     }
     
-    public func read<T: Decodable>(as type: T.Type, with query: String) throws -> [T]  {
+    func read<T: Decodable>(as type: T.Type, with query: String) throws -> [T]  {
         var results: [T] = []
         let statement = try database.prepareStatement(query)
         
@@ -190,5 +192,19 @@ extension SQLTable {
         query += ";"
         
         return try read(as: type, with: query)
+    }
+}
+
+// MARK: SQLTable.Name
+extension SQLTable {
+    public struct Name: TypedString, Sendable {
+        var rawValue: String
+        public init(stringLiteral value: StringLiteralType) {
+            rawValue = value
+        }
+        public init(_ name: String) {
+            rawValue = name
+        }
+        public var description: String { rawValue }
     }
 }

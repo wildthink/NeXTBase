@@ -7,16 +7,44 @@
 import Foundation
 
 public class SQLDatabase {
+    public enum Option: Int32 { case read, read_write }
     public private(set) var ref: OpaquePointer?
+    let configuration: Configuration
+    var tables: [SQLTable]
     
-    public init(path: String) throws {
+    public init(
+        path: String = ":memory:",
+        options: Option = .read_write,
+        create: Bool = true,
+        configuration: Configuration? = nil
+    ) throws {
+        tables = []
+        self.configuration = configuration ?? .init()
         try checkError {
-            sqlite3_open(path, &ref)
+            var opt = options == .read_write ? SQLITE_OPEN_READWRITE : SQLITE_OPEN_READONLY
+            if create { opt = (opt | SQLITE_OPEN_CREATE) }
+            return sqlite3_open_v2(path, &ref, opt, nil)
+        }
+        if let auth = self.configuration.authorizor {
+            auth.register(in: self)
         }
     }
     
+    func clearAuthorizer() {
+        sqlite3_set_authorizer(ref, nil, nil)
+    }
+
     deinit {
         sqlite3_close(ref)
+    }
+    
+    public func table(_ named: SQLTable.Name) -> SQLTable {
+        if let t = tables.first(where: {$0.tableName == named} ) {
+            return t
+        }
+        let nt = SQLTable(database: self, tableName: named)
+        tables.append(nt)
+        return nt
     }
     
     public func execute(sql: String) throws {
@@ -46,8 +74,65 @@ public class SQLDatabase {
         }
         try execute(sql: "ROLLBACK TRANSACTION;")
     }
-    
 }
+
+// MARK: Database Conguration
+public extension SQLDatabase {
+    struct Configuration {
+        var name: String
+        var authorizor: StatementAuthorizer?
+        
+        init(name: String = "default", authorizor: StatementAuthorizer? = nil) {
+            self.name = name
+            self.authorizor = authorizor
+        }
+    }
+}
+
+// MARK: Read/Write through to Tables
+public extension SQLDatabase {
+    
+    func read<T: Decodable>(
+    id: Int64, from table: SQLTable.Name,
+    as type: T.Type = T.self
+    ) throws -> T? {
+        let table = self.table(table)
+        return try table.read(as: T.self, where: "id = \(id) LIMIT 1").first
+    }
+
+    func read<T: Decodable>(
+        from table: SQLTable.Name,
+        as type: T.Type = T.self,
+        where condition: String? = nil,
+        limit: Int? = nil
+    ) throws -> [T] {
+        let table = self.table(table)
+        return try table.read(as: T.self)
+    }
+    
+    func write<T: Codable>(_ nob: T, to: SQLTable.Name) throws {
+        let table = self.table(to)
+        try table.createOrUpdateTable(for: T.self)
+        try table.write(nob)
+    }
+}
+
+#if canImport(TabularData)
+import TabularData
+
+public extension SQLDatabase {
+    
+    func dataFrame(from table: SQLTable.Name, limit: Int = 0) throws -> DataFrame {
+        let stmt = try prepareStatement("SELECT * FROM \(table) LIMIT \(limit)")
+        return try DataFrame(statement: stmt)
+    }
+    
+    func write(dataFrame: DataFrame, to table: SQLTable.Name, create: Bool) throws {
+        try dataFrame.writeSQL(connection: self, table: table.rawValue, createTable: create)
+    }
+}
+
+#endif
 
 struct SQLError: Error {
     var file: String
@@ -63,52 +148,5 @@ struct SQLError: Error {
         self.line = line
         self.code = code
         self.message = message
-    }
-}
-
-@discardableResult
-func checkError( _ code: Int32, file: String = #fileID, line: UInt = #line) throws -> Int32 {
-    try checkError(file: file, line: line, { code })
-}
-
-@discardableResult
-func checkError(file: String = #fileID, line: UInt = #line, _ fn: () -> Int32) throws -> Int32 {
-    let code = fn()
-    guard code == SQLITE_OK || code == SQLITE_DONE || code == SQLITE_ROW
-    else {
-        let str = String(cString: sqlite3_errstr(code), else: "unknown")
-        throw SQLError(file: file, line: line, code: code, str)
-    }
-    return code
-}
-
-extension String {
-    
-    @_disfavoredOverload
-    init?(cString: UnsafePointer<UInt8>?) {
-        guard let cString else { return nil }
-        self = String(cString: cString)
-    }
-    
-    init(cString: UnsafePointer<UInt8>?, else alt: String) {
-        self = if let cString {
-            String(cString: cString)
-        } else {
-            alt
-        }
-    }
-
-    @_disfavoredOverload
-    init?(cString: UnsafePointer<CChar>?) {
-        guard let cString else { return nil }
-        self = String(cString: cString)
-    }
-
-    init(cString: UnsafePointer<CChar>?, else alt: String) {
-        self = if let cString {
-            String(cString: cString)
-        } else {
-            alt
-        }
     }
 }

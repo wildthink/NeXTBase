@@ -63,13 +63,13 @@ public extension Unique64 {
 /**
  Explanation
  
- 1.    date Property:
+ 1.   date Property:
  •    Masks out the lower 16 bits using self & ~0xFFFF to isolate the timestamp.
  •    Converts the remaining timestamp (in microseconds) back to seconds by dividing by 1,000,000.
  •    Uses the timeIntervalSinceReferenceDate to create a Date object.
  •    Includes a sanity check to ensure the time interval is valid (non-negative).
  
- 2.    tag16 Property:
+ 2.   tag16 Property:
  •    Extracts the lower 16 bits using self & 0xFFFF and converts the result to Int16.
  */
 public extension Int64 {
@@ -88,5 +88,11 @@ public extension Int64 {
     /// Assumes the lower 16 bits represent the tag.
     var tag16: Int16 {
         return Int16(self & 0xFFFF) // Extract the lower 16 bits
+    }
+    
+    init(date: Date, tag: Int16) {
+        let interval = date.timeIntervalSinceReferenceDate
+        let scaledInterval = Int64(interval * 1_000_000) & ~0xFFFF
+        self = scaledInterval | Int64(tag)
     }
 }
