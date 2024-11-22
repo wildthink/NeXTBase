@@ -22,7 +22,7 @@ public extension Identifiable where ID == Int64 {
  •    Multiply the interval to scale it to the desired precision (e.g., microseconds).
  •    Convert it to an Int64, ensuring that the lower 16 bits are cleared by masking or shifting.
  */
-public struct Unique64 {
+public struct Unique64: Sendable {
     private var last: Int64 = 0
     private let lock = NSLock() // Ensure thread safety
     

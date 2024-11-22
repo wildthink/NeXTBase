@@ -7,7 +7,7 @@
 //
 import Foundation
 
-public enum SQLStorageType {
+public enum SQLStorageType: Sendable {
     case primaryIntegerKey
     case integer, text, float, blob, null
     var decl: String {

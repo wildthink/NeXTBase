@@ -12,7 +12,7 @@ protocol Bindable {
 }
 
 // MARK: Alt Database.execute()
-extension SQLDatabase {
+extension NeXTBase {
 
     func execute(query: String, params: Bindable...) throws {
         var statement: OpaquePointer?

@@ -7,7 +7,7 @@
 //
 import Foundation
 
-public struct SQLColumn {
+public struct SQLColumn: Sendable {
     public var name: String
     public var definition: String { sqlType.decl }
     public var sqlType: SQLStorageType

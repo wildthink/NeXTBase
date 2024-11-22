@@ -10,11 +10,11 @@ import Foundation
 
 public class SQLTable {
     // TODO: Consider null safety handling
-    private weak var database: SQLDatabase!
+    private weak var database: NeXTBase!
     public private(set) var tableName: SQLTable.Name
     public private(set) var columns: [SQLColumn] = []
     
-    public init(database: SQLDatabase, tableName: SQLTable.Name) {
+    public init(database: NeXTBase, tableName: SQLTable.Name) {
         self.database = database
         self.tableName = tableName
     }

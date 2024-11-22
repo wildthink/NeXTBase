@@ -2,21 +2,22 @@
 Why Yet Another SQLite Wrapper?
 
 Traditional Object-Relational Models (ORM) pretty much 
-insist on a single Object type definition and that there 
-be a 1-to-1 relationship it and a particular table in 
+insist on a single Object class/type definition and that 
+there be a 1-to-1 relationship it and a particular table in 
 your database. In support of this, most frameworks provide
 automatic class/type generation with an incredibly annoying
 and timeconsuming cascade effect on the rest of the code
-base. In addition, requiring a (single) common class to
+base. In addition, requiring a single common class to
 interact with the database creates considerable impacts
 across all modules, regardless of what columns/attributes
-that module might need. 
+that module might need; not every features need all the details.
 
 NeXTBase does not have this requirement. Rather, it uses 
 the structure and types of the type being used to discern 
 what columns are expected or needed for the given table.
 Missing columns are added using an "ALTER TABLE .. ADD COLUMN"
-as needed.
+as needed. There are, of course, important conventions, but
+strong type safety is easily maintained.
 
 NOTE: This auto table creation and alteration can be disabled
 by configuration when you need to lock-down the schema for
@@ -56,8 +57,8 @@ try? table.write(profile, to: .profiles)
 try? table.write(profileDetails, to: .profiles)
 // What just happened? It just works!
 
-let p: Profile = db.read(id: 1, from: .profiles)
-let d: ProfileDetail = db.select(id: 1, from: .profiles)
+let p: Profile? = db.read(id: 1, from: .profiles)
+let d: ProfileDetail? = db.select(id: 1, from: .profiles)
 // What would you expect? It just works!
 
 ```
@@ -89,9 +90,8 @@ provides output like this
 Unique64 provides a monotonically increasing Int64 value
 sequence generator that encorporates the current DateTime
 with a user defined Int16 tag in the lower bits. Incorporating
-the DateTime virtually ensures unique ids from session to
-session. Unlike UUIDs, the sequencing is a feature for
-database performance.
+the DateTime ensures unique ids from session to session. 
+Unlike UUIDs, the sequencing is a feature for database performance.
 
 While not a strict requirement for using NeXTBase, it can
 enable the expectation and use of a globally unique Int64
@@ -104,7 +104,7 @@ identifier for the records/entities in your database.
 // use your own sequencer
 
 struct Profile: Codable, Identifiable {
-    var id: Int64 = eid()
+    var id: Int64 = eid() // <- Unique64.shared.next()
     var name: String
 }
 
@@ -123,3 +123,4 @@ struct Profile: Codable, Identifiable {
 ### Backlog
 
 - [ ] SQLite + Usearch
+- [ ] DuckDB integration

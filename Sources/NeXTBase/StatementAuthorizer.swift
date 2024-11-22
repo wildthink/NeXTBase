@@ -23,7 +23,7 @@ import Darwin
 final class StatementAuthorizer {
 
     /// Registers the authorizer with `sqlite3_set_authorizer`.
-    func register(in database: SQLDatabase) {
+    func register(in database: NeXTBase) {
         let authorizerP = Unmanaged.passUnretained(self).toOpaque()
         sqlite3_set_authorizer(
             database.ref,

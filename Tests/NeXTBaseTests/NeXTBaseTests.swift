@@ -58,7 +58,7 @@ extension SQLTable.Name {
 }
 
 func testDB_ii() throws {
-    let db = try SQLDatabase(path: "/tmp/_ii.db")
+    let db = try NeXTBase()
     let p = Person(id: 1, name: "Jane")
     
     try db.write(p, to: .profiles)
@@ -94,7 +94,7 @@ func testDB() throws -> String {
         Swift.print(arg, to: &result)
     }
     
-    let db = try SQLDatabase(path: ":memory:")
+    let db = try NeXTBase(path: ":memory:")
     let t = SQLTable(database: db, tableName: "people")
     
     try t.createOrUpdateTable(for: Person.self)

@@ -11,7 +11,7 @@ import TabularData
 
 fileprivate let SQLITE_TRANSIENT = unsafeBitCast(OpaquePointer(bitPattern: -1), to: sqlite3_destructor_type.self)
 
-public typealias SQLiteConnection = SQLDatabase
+public typealias SQLiteConnection = NeXTBase
 public typealias SQLiteStatement = SQLStatement
 public typealias SQLiteType = SQLStorageType
 

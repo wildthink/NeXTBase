@@ -6,7 +6,7 @@
  @_exported import SQLite3
 import Foundation
 
-public class SQLDatabase {
+public class NeXTBase: @unchecked Sendable {
     public enum Option: Int32 { case read, read_write }
     public private(set) var ref: OpaquePointer?
     let configuration: Configuration
@@ -77,7 +77,7 @@ public class SQLDatabase {
 }
 
 // MARK: Database Conguration
-public extension SQLDatabase {
+public extension NeXTBase {
     struct Configuration {
         var name: String
         var authorizor: StatementAuthorizer?
@@ -90,7 +90,7 @@ public extension SQLDatabase {
 }
 
 // MARK: Read/Write through to Tables
-public extension SQLDatabase {
+public extension NeXTBase {
     
     func read<T: Decodable>(
     id: Int64, from table: SQLTable.Name,
@@ -120,7 +120,7 @@ public extension SQLDatabase {
 #if canImport(TabularData)
 import TabularData
 
-public extension SQLDatabase {
+public extension NeXTBase {
     
     func dataFrame(from table: SQLTable.Name, limit: Int = 0) throws -> DataFrame {
         let stmt = try prepareStatement("SELECT * FROM \(table) LIMIT \(limit)")
