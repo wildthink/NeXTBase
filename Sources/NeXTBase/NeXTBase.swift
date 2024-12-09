@@ -10,7 +10,9 @@ public class NeXTBase: @unchecked Sendable {
     public enum Option: Int32 { case read, read_write }
     public private(set) var ref: OpaquePointer?
     let configuration: Configuration
+    var lastCommitDate: Date?
     var tables: [SQLTable]
+    
     
     public init(
         path: String = ":memory:",
@@ -33,7 +35,7 @@ public class NeXTBase: @unchecked Sendable {
     func clearAuthorizer() {
         sqlite3_set_authorizer(ref, nil, nil)
     }
-
+    
     deinit {
         sqlite3_close(ref)
     }
@@ -74,6 +76,25 @@ public class NeXTBase: @unchecked Sendable {
         }
         try execute(sql: "ROLLBACK TRANSACTION;")
     }
+    
+    // MARK: Combine
+    var _events: CurrentValueSubject<NeXTEvent,Never> = .init(.neXtBaseWillCommit)
+    public lazy var events: AnyPublisher<NeXTEvent,Never> = _events.eraseToAnyPublisher()
+    public func post(_ event: NeXTEvent) { _events.send(event) }
+}
+
+// MARK: Combine Event Publisher
+import Combine
+
+public struct NeXTEvent: Sendable {
+    public let name: String
+//    public let timestamp: Date = Date()
+//    public private(set) weak var db: NeXTBase?
+}
+
+public extension NeXTEvent {
+    static let neXtBaseWillCommit  = NeXTEvent(name: "neXtBaseWillCommit")
+    static let neXtBaseDidRollback = NeXTEvent(name: "neXtBaseDidRollback")
 }
 
 // MARK: Database Conguration
@@ -107,7 +128,7 @@ public extension NeXTBase {
         limit: Int? = nil
     ) throws -> [T] {
         let table = self.table(table)
-        return try table.read(as: T.self)
+        return try table.read(as: T.self, where: condition, limit: limit)
     }
     
     func write<T: Codable>(_ nob: T, to: SQLTable.Name) throws {

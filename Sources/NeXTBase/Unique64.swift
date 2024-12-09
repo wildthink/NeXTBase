@@ -8,9 +8,9 @@
 
 import Foundation
 
-public protocol SystemEntity: Identifiable where ID == Int64 {}
+public protocol NeXTBaseEntity: Identifiable, Equatable, Codable where ID == Int64 {}
 
-public extension Identifiable where ID == Int64 {
+public extension Identifiable where Self: NeXTBaseEntity {
     @_disfavoredOverload
     static func eid(tag: Int16 = 0) -> Int64 {
         return Unique64.shared.next(tag: tag)
