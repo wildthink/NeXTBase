@@ -9,6 +9,8 @@ import Foundation
 public class NeXTBase: @unchecked Sendable {
     public enum Option: Int32 { case read, read_write }
     public private(set) var ref: OpaquePointer?
+    public private(set) var lastUpdated: Date?
+    
     let configuration: Configuration
     var tables: [SQLTable]
     
@@ -20,6 +22,7 @@ public class NeXTBase: @unchecked Sendable {
     ) throws {
         tables = []
         self.configuration = configuration ?? .init()
+        
         try checkError {
             var opt = options == .read_write ? SQLITE_OPEN_READWRITE : SQLITE_OPEN_READONLY
             if create { opt = (opt | SQLITE_OPEN_CREATE) }
@@ -30,14 +33,17 @@ public class NeXTBase: @unchecked Sendable {
         }
     }
     
+    deinit {
+        sqlite3_close(ref)
+    }
+}
+
+public extension NeXTBase {
+    
     func clearAuthorizer() {
         sqlite3_set_authorizer(ref, nil, nil)
     }
 
-    deinit {
-        sqlite3_close(ref)
-    }
-    
     public func table(_ named: SQLTable.Name) -> SQLTable {
         if let t = tables.first(where: {$0.tableName == named} ) {
             return t
