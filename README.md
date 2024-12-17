@@ -60,7 +60,6 @@ try? table.write(profileDetails, to: .profiles)
 let p: Profile? = db.read(id: 1, from: .profiles)
 let d: ProfileDetail? = db.select(id: 1, from: .profiles)
 // What would you expect? It just works!
-
 ```
 
 NeXTBase also supports reading and writing of Tabular
@@ -82,8 +81,13 @@ provides output like this
 │ 1 │ 2       │ George   │ tagged   │
 └───┴─────────┴──────────┴──────────┘
 2 rows, 3 columns
-
 ```
+
+### What about MVVM, etc?
+
+The short answer is, NeXTBase plays well here.
+
+The longer answer requires a deconstruction of the "Model". As used, the term "model" conflates "schema" with "Source of Truth" (SoT). The Schema **only** specifies the structure of the domain, whereas the SoT is the instantiation of values used for calculation and presentation. The important distinction is NeXTBase favors using Swift structs (and classes) as a facet; its structure defining  a particular reified subset of the overall object graph as specified by the schema; something akin to a Relational Database "View", if you will. In MVVM terms, in the example above, both the `Profile` and `ProfileDetails` naturally provide a View-Model for use in the defining feature or module.
 
 ### Unique64
 

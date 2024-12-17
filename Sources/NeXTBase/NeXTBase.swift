@@ -5,12 +5,16 @@
 
  @_exported import SQLite3
 import Foundation
+import Observation
 
+@Observable
 public class NeXTBase: @unchecked Sendable {
     public enum Option: Int32 { case read, read_write }
-    public private(set) var ref: OpaquePointer?
+    public internal(set) var ref: OpaquePointer?
+    public internal(set) var lastUpdated: Date?
+    
     let configuration: Configuration
-    var lastCommitDate: Date?
+//    var lastCommitDate: Date?
     var tables: [SQLTable]
     
     
@@ -22,6 +26,7 @@ public class NeXTBase: @unchecked Sendable {
     ) throws {
         tables = []
         self.configuration = configuration ?? .init()
+        
         try checkError {
             var opt = options == .read_write ? SQLITE_OPEN_READWRITE : SQLITE_OPEN_READONLY
             if create { opt = (opt | SQLITE_OPEN_CREATE) }
@@ -32,15 +37,22 @@ public class NeXTBase: @unchecked Sendable {
         }
     }
     
+    deinit {
+        sqlite3_close(ref)
+    }
+}
+
+public extension NeXTBase {
+    
     func clearAuthorizer() {
         sqlite3_set_authorizer(ref, nil, nil)
     }
     
-    deinit {
-        sqlite3_close(ref)
-    }
+//    deinit {
+//        sqlite3_close(ref)
+//    }
     
-    public func table(_ named: SQLTable.Name) -> SQLTable {
+   public func table(_ named: SQLTable.Name) -> SQLTable {
         if let t = tables.first(where: {$0.tableName == named} ) {
             return t
         }
@@ -78,9 +90,9 @@ public class NeXTBase: @unchecked Sendable {
     }
     
     // MARK: Combine
-    var _events: CurrentValueSubject<NeXTEvent,Never> = .init(.neXtBaseWillCommit)
-    public lazy var events: AnyPublisher<NeXTEvent,Never> = _events.eraseToAnyPublisher()
-    public func post(_ event: NeXTEvent) { _events.send(event) }
+//    var _events: CurrentValueSubject<NeXTEvent,Never> = .init(.neXtBaseWillCommit)
+//    public lazy var events: AnyPublisher<NeXTEvent,Never> = _events.eraseToAnyPublisher()
+//    public func post(_ event: NeXTEvent) { _events.send(event) }
 }
 
 // MARK: Combine Event Publisher
