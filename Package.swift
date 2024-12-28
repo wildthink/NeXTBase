@@ -4,7 +4,7 @@ import PackageDescription
 
 let package = Package(
     name: "NeXTBase",
-    platforms: [.iOS(.v15), .macOS(.v14), .tvOS(.v18), .watchOS(.v10)],
+    platforms: [.iOS(.v17), .macOS(.v14), .tvOS(.v18), .watchOS(.v10)],
     products: [
         .library(
             name: "NeXTBase",
