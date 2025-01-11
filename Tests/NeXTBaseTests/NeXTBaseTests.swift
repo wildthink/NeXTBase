@@ -60,8 +60,11 @@ extension SQLTable.Name {
 func testDB_ii() throws {
     let db = try NeXTBase()
     let p = Person(id: 1, name: "Jane")
-    
+    db.setUpdateHook(.debug)
+    print(db.lastUpdated as Any)
     try db.write(p, to: .profiles)
+    print(db.lastUpdated as Any)
+    
     let df1 = try db.dataFrame(from: .profiles, limit: 10)
     print(df1)
     
