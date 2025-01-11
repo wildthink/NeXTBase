@@ -37,21 +37,20 @@ public struct Unique64: Sendable {
     
     /// Generates the next unique 64-bit value with a 16-bit tag.
     public mutating func next(tag: Int16 = 0) -> Int64 {
-        lock.lock() // Begin critical section
-        defer { lock.unlock() } // Ensure lock is released
-        
-        // Generate the base time value
-        var next = now()
-        // Ensure the sequence is monotonically increasing
-        while !(last < next) {
-            // Resolve collision by incrementing 17th bit
-            // next = next.increment(bit: 16)
-            next = next + (1 << 16)
+         lock.withLock {
+            // Generate the base time value
+            var next = now()
+            // Ensure the sequence is monotonically increasing
+            while !(last < next) {
+                // Resolve collision by incrementing 17th bit
+                // next = next.increment(bit: 16)
+                next = next + (1 << 16)
+            }
+            // Update last value
+            last = next
+            // Add the tag to the lower 16 bits
+            return last | Int64(tag)
         }
-        // Update last value
-        last = next
-        // Add the tag to the lower 16 bits
-        return last | Int64(tag)
     }
 }
 
