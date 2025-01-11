@@ -24,7 +24,7 @@ public extension Identifiable where ID == Int64 {
  */
 public struct Unique64: Sendable {
     private var last: Int64 = 0
-    private let lock = NSLock() // Ensure thread safety
+    private let lock = NSRecursiveLock() // Ensure thread safety
     
     /// Returns the current time as a 64-bit integer with lower 16 bits set to zero.
     func now() -> Int64 {

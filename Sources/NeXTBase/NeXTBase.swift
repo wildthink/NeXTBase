@@ -5,10 +5,12 @@
 
  @_exported import SQLite3
 import Foundation
+import Observation
 
+@Observable
 public class NeXTBase: @unchecked Sendable {
     public enum Option: Int32 { case read, read_write }
-    public private(set) var ref: OpaquePointer?
+    @ObservationIgnored public private(set) var ref: OpaquePointer?
     public private(set) var lastUpdated: Date?
     
     let configuration: Configuration
@@ -44,7 +46,7 @@ public extension NeXTBase {
         sqlite3_set_authorizer(ref, nil, nil)
     }
 
-    public func table(_ named: SQLTable.Name) -> SQLTable {
+    func table(_ named: SQLTable.Name) -> SQLTable {
         if let t = tables.first(where: {$0.tableName == named} ) {
             return t
         }
@@ -53,13 +55,13 @@ public extension NeXTBase {
         return nt
     }
     
-    public func execute(sql: String) throws {
+    func execute(sql: String) throws {
         try checkError {
             sqlite3_exec(ref, sql, nil, nil, nil)
         }
     }
     
-    public func prepareStatement(_ sql: String) throws -> SQLStatement {
+    func prepareStatement(_ sql: String) throws -> SQLStatement {
         var statement: OpaquePointer?
         try checkError {
             sql.withCString {
@@ -71,7 +73,7 @@ public extension NeXTBase {
         return SQLStatement(pointer: statement)
     }
     
-    public func read(_ sql: String, call: (SQLStatement) throws -> Void) throws {
+    func read(_ sql: String, call: (SQLStatement) throws -> Void) throws {
         let statement: SQLStatement = try prepareStatement(sql)
         try execute(sql: "START TRANSACTION;")
         // Since we are read-only

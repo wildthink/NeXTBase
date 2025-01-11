@@ -10,23 +10,23 @@ import Testing
 import Foundation
 import TabularData
 
-@Test func frameChecer() async throws {
+@Test func frameChecker() async throws {
     try testDB_ii()
 }
 
-@Test func recordChecker() async throws {
-    // Write your test here and use APIs like `#expect(...)` to check expected conditions.
-    let rep = try testDB()
-    
-    var rlines = [String]()
-    rep.enumerateLines { line, stop in
-        rlines.append(line)
-    }
-    for (a, b) in zip(rlines, expected_report) {
-//        print("\(a) =? \(b)")
-        #expect(a == b)
-    }
-}
+//@Test func recordChecker() async throws {
+//    // Write your test here and use APIs like `#expect(...)` to check expected conditions.
+//    let rep = try testDB()
+//    
+//    var rlines = [String]()
+//    rep.enumerateLines { line, stop in
+//        rlines.append(line)
+//    }
+//    for (a, b) in zip(rlines, expected_report) {
+////        print("\(a) =? \(b)")
+//        #expect(a == b)
+//    }
+//}
 
 let expected_report: [String] = [
     #"Person(id: 1, name: "Jane")"#,

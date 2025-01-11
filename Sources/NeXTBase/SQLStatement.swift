@@ -84,6 +84,16 @@ public class SQLStatement {
         let idx = Int32(index)
         guard idx >= 0, idx < sqlite3_column_count(ref)
         else { throw SQLError(code: 0, "Column Index Out of Bounds") }
+        let cv = sqlite3_column_value(ref, idx)
+//        let val = sqlite3_value_dup(cv)
+        return SQLiteValue(cv)
+    }
+    
+    @_disfavoredOverload
+    public func _columnValue(at index: Int32) throws -> Any? {
+        let idx = Int32(index)
+        guard idx >= 0, idx < sqlite3_column_count(ref)
+        else { throw SQLError(code: 0, "Column Index Out of Bounds") }
         
         let type = columnType(at: idx)
         switch type {
