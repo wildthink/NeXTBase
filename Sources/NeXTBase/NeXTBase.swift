@@ -7,11 +7,17 @@
 import Foundation
 import Observation
 
-@Observable
+@globalActor
+public actor SQLiteActor: GlobalActor {
+    public static var shared: SQLiteActor = SQLiteActor()
+}
+
+
 public class NeXTBase: @unchecked Sendable {
     public enum Option: Int32 { case read, read_write }
-    @ObservationIgnored public private(set) var ref: OpaquePointer?
+    public private(set) var ref: OpaquePointer?
     public internal(set) var lastUpdated: Date?
+    public let path: String
     let configuration: Configuration
 
     var tables: [SQLTable]
@@ -25,7 +31,7 @@ public class NeXTBase: @unchecked Sendable {
     ) throws {
         tables = []
         self.configuration = configuration ?? .init()
-        
+        self.path = path
         try checkError {
             var opt = options == .read_write ? SQLITE_OPEN_READWRITE : SQLITE_OPEN_READONLY
             if create { opt = (opt | SQLITE_OPEN_CREATE) }

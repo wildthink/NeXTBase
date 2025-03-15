@@ -128,3 +128,12 @@ struct Profile: Codable, Identifiable {
 
 - [ ] SQLite + Usearch
 - [ ] DuckDB integration
+
+### Resources
+
+- ByteCast X - SwiftUI Table with Dynamic Columns | JSON/CSV Tabular Data Frame
+    - https://www.youtube.com/watch?v=T1QfB_9rMa0
+    - https://github.com/alfianlosari/xca-bytes-cast
+    - https://dev.to/canopassoftware/how-to-create-dynamic-table-view-in-swiftui-j1k
+    - https://codewithchris.com/swiftui-table/
+    
